@@ -9,12 +9,15 @@
 #include <unordered_map>
 #include <mutex>
 
+namespace mb {
+namespace data {
+
+#define WORD_BIT_SIZE 16
+
 #define DWORD  uint32_t
 #define WORD   uint16_t
 #define BIT    uint8_t
 
-namespace mb {
-namespace data {
 
 /** @brief типы данных карт */
 enum class MapType {
@@ -31,7 +34,7 @@ enum class MemMode {
 	LITTLE_ENDIAN_BYTE_SWAP_MODE, // Byte Swap каждого 16-битного слова в 32-битном числе
 };
 
-static constexpr MemMode default_mem_mode = MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE;
+constexpr MemMode default_mem_mode = MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE;
 
 /** @brief Класс отвечает за создание(привязки) карты памяти последовательных адресов.
 	Карта памяти может быть в виде битов (BIT) или слов (WORD) и имеет начальный адрес и количество регистров (слов или битов)
@@ -52,8 +55,11 @@ static constexpr MemMode default_mem_mode = MemMode::LITTLE_ENDIAN_BYTE_SWAP_MOD
 
 class Map {
 public:
-	Map() {}
-	Map(WORD start_adr, WORD quantity) : m_start_adr(start_adr), m_quantity(quantity) {
+	Map() : m_mem_16_ptr(nullptr), m_mem_8_ptr(nullptr) {}
+	Map(WORD start_adr, WORD quantity) : m_start_adr(start_adr), 
+													 m_quantity(quantity),
+													 m_mem_16_ptr(nullptr),
+													 m_mem_8_ptr(nullptr) {
 		m_end_adr = m_start_adr + quantity - 1;
 	}
 	~Map() {}
@@ -61,39 +67,42 @@ public:
 	bool bindMap(MapType map_type, WORD start_adr, WORD quantity, void *data_ptr); // Привязка карты памяти к внешнему указателю на память (например на структуру пользователя)
 																										  // В этом случае чтение и запись в пользовательскую память необходимо будет производить
 																										  // только через картку памяти Map, если хотим безопасную работу с данными за счет mutex
+	bool initNewMemory(MapType map_type, MemMode mode = default_mem_mode); 		  // Инициализация новой памяти
 
 	bool initNewMemory(); 											// Инициализация новой памяти
 	void clearMemory();												// Очистка выделенной памяти
+
+	void setMapType(MapType map_type);							// Установка типа карты WORD или BIT
 
 	// void setStartAdr(WORD start_adr);   						// Установка стартового адреса
 	// void setQuantity(WORD quantity);	 							// Установка количества регистров
 
 	/* Чтение|Запись битов и слов */
-	bool readWord(WORD adr, WORD *val, MemMode mode = default_mem_mode);
-	bool readDWord(WORD adr, DWORD *val, MemMode mode = default_mem_mode);
-	bool readWords(WORD adr, WORD quantity, WORD *val, MemMode mode = default_mem_mode);
+	bool readWord(const WORD adr, WORD *const val, MemMode mode = default_mem_mode);
+	bool readDWord(const WORD adr, DWORD *const val, MemMode mode = default_mem_mode);
+	bool readWords(const WORD adr, const WORD quantity, WORD *const val, MemMode mode = default_mem_mode);
 
-	bool writeWord(WORD adr, WORD *val, MemMode mode = default_mem_mode);
-	bool writeDWord(WORD adr, DWORD *val, MemMode mode = default_mem_mode);
-	bool writeWords(WORD adr, WORD quantity, WORD *val, MemMode mode = default_mem_mode);
+	bool writeWord(const WORD adr, const WORD val, MemMode mode = default_mem_mode);
+	bool writeDWord(const WORD adr, const DWORD val, MemMode mode = default_mem_mode);
+	bool writeWords(const WORD adr, const WORD quantity, WORD *const val, MemMode mode = default_mem_mode);
 
-	bool readBit(WORD adr, BIT *val, MemMode mode = default_mem_mode);
-	bool readBits(WORD adr, WORD quantity, BIT *val, MemMode mode = default_mem_mode);
+	bool readBit(const WORD adr, BIT* val, MemMode mode = default_mem_mode);
+	bool readBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
 
-	bool writeBit(WORD adr, BIT *val, MemMode mode = default_mem_mode);
-	bool writeBits(WORD adr, WORD quantity, BIT *val, MemMode mode = default_mem_mode);
+	bool writeBit(const WORD adr, const BIT val, MemMode mode = default_mem_mode);
+	bool writeBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
 
 	/* Чтение|Запись и интерпретирование в нужное представление int signed|int unsigned|float */
-	bool readUInt8(WORD adr, uint8_t* val, MemMode mode = default_mem_mode);
-	bool readUInt16(WORD adr, uint16_t* val, MemMode mode = default_mem_mode);
-	bool readUInt32(WORD adr, uint32_t* val, MemMode mode = default_mem_mode);
-	bool readInt8(WORD adr, int8_t* val, MemMode mode = default_mem_mode);
-	bool readInt16(WORD adr, int16_t* val, MemMode mode = default_mem_mode);
-	bool readInt32(WORD adr, int32_t* val, MemMode mode = default_mem_mode);
-	bool readFloat16(WORD adr, float *val, uint8_t precision, MemMode mode = default_mem_mode);
-	bool readFloat32(WORD adr, float* val, MemMode mode = default_mem_mode);
-	
-	bool writeFloat32(WORD adr, float* val, MemMode mode = default_mem_mode);
+	bool readUInt8(const WORD adr, uint8_t *const val, MemMode mode = default_mem_mode);
+	bool readUInt16(const WORD adr, uint16_t *const val, MemMode mode = default_mem_mode);
+	bool readUInt32(const WORD adr, uint32_t *const val, MemMode mode = default_mem_mode);
+	bool readInt8(const WORD adr, int8_t *const val, MemMode mode = default_mem_mode);
+	bool readInt16(const WORD adr, int16_t *const val, MemMode mode = default_mem_mode);
+	bool readInt32(const WORD adr, int32_t *const val, MemMode mode = default_mem_mode);
+	bool readFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode = default_mem_mode);
+	bool readFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
+
+	bool writeFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
 
 private:
 	WORD m_start_adr; 	// Стартовый адрес
