@@ -13,6 +13,7 @@ namespace mb {
 namespace data {
 
 #define WORD_BIT_SIZE 16
+#define DWORD_BIT_SIZE 32
 
 #define DWORD  uint32_t
 #define WORD   uint16_t
@@ -67,9 +68,11 @@ public:
 	bool bindMap(MapType map_type, WORD start_adr, WORD quantity, void *data_ptr); // Привязка карты памяти к внешнему указателю на память (например на структуру пользователя)
 																										  // В этом случае чтение и запись в пользовательскую память необходимо будет производить
 																										  // только через картку памяти Map, если хотим безопасную работу с данными за счет mutex
-	bool initNewMemory(MapType map_type, MemMode mode = default_mem_mode); 		  // Инициализация новой памяти
-
-	bool initNewMemory(); 											// Инициализация новой памяти
+	
+	bool initNewMemory(WORD start_adr, WORD quantity, MapType map_type, MemMode mode = default_mem_mode); 		  // Инициализация новой памяти
+	bool initNewMemory(MapType map_type, MemMode mode = default_mem_mode); 		  
+	bool initNewMemory(); 														  
+	
 	void clearMemory();												// Очистка выделенной памяти
 
 	void setMapType(MapType map_type);							// Установка типа карты WORD или BIT
@@ -78,18 +81,47 @@ public:
 	// void setQuantity(WORD quantity);	 							// Установка количества регистров
 
 	/* Чтение|Запись битов и слов */
+	// Чтение слова
 	bool readWord(const WORD adr, WORD *const val, MemMode mode = default_mem_mode);
+	// Чтение двойного слова
 	bool readDWord(const WORD adr, DWORD *const val, MemMode mode = default_mem_mode);
+	// Чтение массива слов
 	bool readWords(const WORD adr, const WORD quantity, WORD *const val, MemMode mode = default_mem_mode);
 
+	// Запись слова
 	bool writeWord(const WORD adr, const WORD val, MemMode mode = default_mem_mode);
+	// Запись двойного слова
 	bool writeDWord(const WORD adr, const DWORD val, MemMode mode = default_mem_mode);
+	// Запись массива слов
 	bool writeWords(const WORD adr, const WORD quantity, WORD *const val, MemMode mode = default_mem_mode);
 
+	// Чтение указанного номера бита в слове, отсчет битов начинается с 0
+	bool readWordNBit(const WORD word_adr, const WORD bit_number, BIT *const val, MemMode mode = default_mem_mode);
+	// Чтение массива битов начиная с указанного номера бита в слове, отсчет битов начинается с 0
+	bool readWordNBits(const WORD word_adr, const WORD bit_number, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
+	// Запись указанного номера бита в слове, отсчет битов начинается с 0
+	bool writeWordNBit(const WORD word_adr, const WORD bit_number, const BIT val, MemMode mode = default_mem_mode);
+	// Запись массива битов начиная с указанного номера бита в слове, отсчет битов начинается с 0
+	bool writeWordNBits(const WORD word_adr, const WORD bit_number, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
+
+	// Чтение бита по адресу в карте слов, первый адрес бита равен 0, отсчет идет от 0 адреса в глобальном понимании
+	// Например есть WORD_MAP стартовый адрес = 7, количество = 10, тогда адрес первого бита слова будет считаться как 7 * 16 = 112 (слово по адресу 7)
+	bool readWordBit(const WORD adr, BIT* val, MemMode mode = default_mem_mode);
+	// Чтение массива битов по адресу в карте слов, первый адрес бита равен 0, отсчет идет от 0 адреса в глобальном понимании, и далее по порядку
+	bool readWordBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
+	// Запись бита по адресу в карте слов
+	bool writeWordBit(const WORD adr, const BIT val, MemMode mode = default_mem_mode);
+	// Запись битов по адресу в карте слов
+	bool writeWordBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
+
+	// Чтение бита
 	bool readBit(const WORD adr, BIT* val, MemMode mode = default_mem_mode);
+	// Чтение массива битов
 	bool readBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
 
+	// Запись бита
 	bool writeBit(const WORD adr, const BIT val, MemMode mode = default_mem_mode);
+	// Запись массива битов
 	bool writeBits(const WORD adr, const WORD quantity, BIT *const val, MemMode mode = default_mem_mode);
 
 	/* Чтение|Запись и интерпретирование в нужное представление int signed|int unsigned|float */
@@ -103,6 +135,22 @@ public:
 	bool readFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
 
 	bool writeFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
+
+	bool printBitMap(WORD width); // Вывод карты битов в консоль
+	bool printWordMap(WORD width); // Вывод карты слов в консоль
+	bool printWordMapBits(WORD width); // Вывод карты слов в консоль в битовом представлении
+
+	inline WORD helperWriteWordBit(WORD word, BIT bit_number, BIT bit_val) {
+		WORD result;
+		if (bit_val) result = word | (1 << bit_number); // Установка 1
+		else result = word & ~(1 << bit_number);		// Установка 0
+		return result;
+	}
+
+	inline WORD helperInvertWordBit(WORD word, BIT bit_number) {
+		return word = word ^ (1 << bit_number);
+	}
+
 
 private:
 	WORD m_start_adr; 	// Стартовый адрес
