@@ -134,6 +134,7 @@ public:
 	bool readFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode = default_mem_mode);
 	bool readFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
 
+	bool writeFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode = default_mem_mode);
 	bool writeFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
 
 	bool printBitMap(WORD width); // Вывод карты битов в консоль
