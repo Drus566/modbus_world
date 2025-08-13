@@ -228,7 +228,7 @@ bool Map::readWordNBits(const WORD word_adr, const WORD bit_number, const WORD q
 			word_val = *(m_mem_16_ptr + offset);
 			t_bit_number = 0;
 		}
-		*(val + i) = helperReadWordBit(word_val, bit_number); 		// Получаем установленный бит по номеру
+		*(val + i) = helperReadWordBit(word_val, t_bit_number); 		// Получаем установленный бит по номеру
 		++t_bit_number;
 	}
 	return true;
