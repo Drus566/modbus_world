@@ -201,7 +201,7 @@ int main(void) {
 
 	// Здесь при чтении мы увидим что считанные биты совпадают с битовым представлением 0001 1100 1010 0111 числа 7335
 	uint8_t wbit_val;
-	WORD wbit_adr = 130;
+	WORD wbit_adr = 128;
 	for (int i = 0; i < 16; i++) {
 		if (!m.readWordBit(wbit_adr + i,&wbit_val)) {
 			std::cout << "Map: Error readWordBit " << static_cast<uint16_t>(wbit_adr+i) << " adr" << std::endl;
@@ -300,10 +300,10 @@ int main(void) {
 	write_wbits_vals[3] = 0;
 
 	if (!m.writeWordNBits(11,6,32,write_wbits_vals)) {
-		std::cout << "Map: Error writeWordNBits 11, number bit 8, quantity 32" << std::endl;
+		std::cout << "Map: Error writeWordNBits 11, number bit 6, quantity 32" << std::endl;
 	}
 	else {
-		std::cout << "Map: writeWordNBits 11, number bit 8, quantity 32" << std::endl;
+		std::cout << "Map: writeWordNBits 11, number bit 6, quantity 32" << std::endl;
 	}
 
 	m.printWordMapBits(5);
