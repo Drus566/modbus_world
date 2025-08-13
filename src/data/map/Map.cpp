@@ -221,14 +221,14 @@ bool Map::readWordNBits(const WORD word_adr, const WORD bit_number, const WORD q
 	if (word_adr < m_start_adr || end_word_adr > m_end_adr) return false;
 
 	for (WORD i = 0; i < quantity; i++) {
-		new_word = t_bit_number % WORD_BIT_SIZE == 0;
+		new_word = t_bit_number == WORD_BIT_SIZE;
 		if (new_word && i != 0) {
 			++t_word_counter;
 			offset = word_adr - m_start_adr + t_word_counter;
 			word_val = *(m_mem_16_ptr + offset);
 			t_bit_number = 0;
 		}
-		*(val + i) = (word_val >> t_bit_number) & 1; 		// Получаем установленный бит по номеру
+		*(val + i) = helperReadWordBit(word_val, bit_number); 		// Получаем установленный бит по номеру
 		++t_bit_number;
 	}
 	return true;
@@ -266,14 +266,16 @@ bool Map::writeWordNBits(const WORD word_adr, const WORD bit_number, const WORD 
 	for (WORD i = 0; i < quantity; i++) {
 		new_word = t_bit_number % WORD_BIT_SIZE == 0;
 		if (new_word && i != 0) {
+			*(m_mem_16_ptr + offset) = word_val;
 			++t_word_counter;
 			offset = word_adr - m_start_adr + t_word_counter; // Получаем сдвиг в памяти
 			word_val = *(m_mem_16_ptr + offset); 	// Получаем значение слова из памяти
 			t_bit_number = 0;
 		}
-		*(m_mem_16_ptr + offset) |= helperWriteWordBit(word_val,t_bit_number,*(val + i));
+		word_val = helperWriteWordBit(word_val,t_bit_number,*(val + i));
 		++t_bit_number;
 	}
+	*(m_mem_16_ptr + offset) = word_val;
 	return true;
 }
 
@@ -295,7 +297,6 @@ bool Map::readWordBit(const WORD bit_adr, BIT* val, MemMode mode) {
 	return true;
 }
 
-// TODO: readWordBits writeWordBits
 bool Map::readWordBits(const WORD bit_adr, const WORD quantity, BIT *const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
 	if (val == nullptr || m_map_type == MapType::BIT_MAP) return false;
@@ -305,7 +306,6 @@ bool Map::readWordBits(const WORD bit_adr, const WORD quantity, BIT *const val, 
 	WORD bit_number = bit_adr % WORD_BIT_SIZE;	 	// Номер бита в слове
 	WORD offset = word_adr - m_start_adr;
 	WORD word_val = *(m_mem_16_ptr + offset);
-	WORD t_word_counter = 0;
 
 	// Проверяем входит ли в диапазоны
 	WORD end_word_adr = (bit_adr + quantity - 1) / WORD_BIT_SIZE;
@@ -314,15 +314,14 @@ bool Map::readWordBits(const WORD bit_adr, const WORD quantity, BIT *const val, 
 	if (word_adr < m_start_adr || end_word_adr > m_end_adr) return false;
 
 	for (WORD i = 0; i < quantity; i++) {
-		new_word = bit_number % WORD_BIT_SIZE == 0;
+		new_word = bit_number == WORD_BIT_SIZE;
 		if (new_word && i != 0) {
-			++t_word_counter;
-			bit_number = bit_adr % WORD_BIT_SIZE;	 	// Получаем номер бита
-			offset = word_adr - m_start_adr + t_word_counter;		 	// Получаем сдвиг в памяти
-			word_val = *(m_mem_16_ptr + offset); 	// Получаем значение слова из памяти
+			++word_adr;
+			offset = word_adr - m_start_adr;		 	// Получаем сдвиг в памяти
+			word_val = *(m_mem_16_ptr + offset); 		// Получаем значение слова из памяти
 			bit_number = 0;
 		}
-		*(val + i) = (word_val >> bit_number) & 1; 		// Получаем установленный бит по номеру
+		*(val + i) = helperReadWordBit(word_val, bit_number); 		// Получаем установленный бит по номеру
 		++bit_number;
 	}
 	return true;
@@ -355,7 +354,6 @@ bool Map::writeWordBits(const WORD bit_adr, const WORD quantity, BIT *const val,
 	WORD bit_number = bit_adr % WORD_BIT_SIZE;	 	// Номер бита в слове
 	WORD offset = word_adr - m_start_adr;
 	WORD word_val = *(m_mem_16_ptr + offset);
-	WORD t_word_counter = 0;
 
 	// Проверяем входит ли в диапазоны
 	WORD end_word_adr = (bit_adr + quantity - 1) / WORD_BIT_SIZE;
@@ -364,17 +362,18 @@ bool Map::writeWordBits(const WORD bit_adr, const WORD quantity, BIT *const val,
 	if (word_adr < m_start_adr || end_word_adr > m_end_adr) return false;
 
 	for (WORD i = 0; i < quantity; i++) {
-		new_word = bit_number % WORD_BIT_SIZE == 0;
+		new_word = bit_number == WORD_BIT_SIZE;
 		if (new_word && i != 0) {
-			++t_word_counter;
-			bit_number = bit_adr % WORD_BIT_SIZE;	 	// Получаем номер бита
-			offset = word_adr - m_start_adr + t_word_counter;		 	// Получаем сдвиг в памяти
+			*(m_mem_16_ptr + offset) = word_val; 	// Запись в память нового регистра
+			++word_adr; 							// Инкременитруем слово
+			offset = word_adr - m_start_adr;		// Получаем сдвиг в памяти
 			word_val = *(m_mem_16_ptr + offset); 	// Получаем значение слова из памяти
-			bit_number = 0;
+			bit_number = 0;							// Меняем позицию бита на ноль
 		}
-		*(m_mem_16_ptr + offset) |= helperWriteWordBit(word_val,bit_number,*(val + i));
+		word_val = helperWriteWordBit(word_val,bit_number,*(val + i));
 		++bit_number;
 	}
+	*(m_mem_16_ptr + offset) = word_val;
 	return true;
 }
 

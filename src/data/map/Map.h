@@ -147,6 +147,10 @@ public:
 		return result;
 	}
 
+	inline BIT helperReadWordBit(WORD word, BIT bit_number) {
+		return (word >> bit_number) & 1;	
+	}
+
 	inline WORD helperInvertWordBit(WORD word, BIT bit_number) {
 		return word = word ^ (1 << bit_number);
 	}
