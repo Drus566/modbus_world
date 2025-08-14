@@ -131,11 +131,17 @@ public:
 	bool readInt8(const WORD adr, int8_t *const val, MemMode mode = default_mem_mode);
 	bool readInt16(const WORD adr, int16_t *const val, MemMode mode = default_mem_mode);
 	bool readInt32(const WORD adr, int32_t *const val, MemMode mode = default_mem_mode);
-	bool readFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode = default_mem_mode);
+	bool readFloat16(const WORD adr, float *const val, uint8_t precision = 1, MemMode mode = default_mem_mode);
 	bool readFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
 
-	bool writeFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode = default_mem_mode);
-	bool writeFloat32(const WORD adr, float *const val, MemMode mode = default_mem_mode);
+	bool writeUInt8(const WORD adr, const uint8_t val, MemMode mode = default_mem_mode);
+	bool writeUInt16(const WORD adr, const uint16_t val, MemMode mode = default_mem_mode);
+	bool writeUInt32(const WORD adr, const uint32_t val, MemMode mode = default_mem_mode);
+	bool writeInt8(const WORD adr, const int8_t val, MemMode mode = default_mem_mode);
+	bool writeInt16(const WORD adr, const int16_t val, MemMode mode = default_mem_mode);
+	bool writeInt32(const WORD adr, const int32_t val, MemMode mode = default_mem_mode);
+	bool writeFloat16(const WORD adr, const float val, uint8_t precision = 1, MemMode mode = default_mem_mode);
+	bool writeFloat32(const WORD adr, const float val, MemMode mode = default_mem_mode);
 
 	bool printBitMap(WORD width); // Вывод карты битов в консоль
 	bool printWordMap(WORD width); // Вывод карты слов в консоль

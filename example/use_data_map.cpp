@@ -308,5 +308,81 @@ int main(void) {
 
 	m.printWordMapBits(5);
 
+	/** Тестирование типов данных */
+	/** readUInt8 | readUInt16 | readUInt32 **/
+	/** readInt8 | readInt16 | readInt32 **/
+	/** readFloat16 | readFloat32 **/
+	/** writeUInt8 | writeUInt16 | writeUInt32 **/
+	/** writeInt8 | writeInt16 | writeInt32 **/
+	/** writeFloat16 | writeFloat32 **/
+
+	uint8_t write_uint8_val = 231;
+	m.writeUInt8(0,write_uint8_val); 
+	std::cout << "Map: writeUInt8 adr 0, val 231" << std::endl;
+
+	uint8_t read_uint8_val;
+	m.readUInt8(0,&read_uint8_val); 
+	std::cout << "Map: readUInt8 adr 0. Val " << static_cast<int>(read_uint8_val) << std::endl;
+
+	uint16_t write_uint16_val = 63123;
+	m.writeUInt16(1,write_uint16_val); 
+	std::cout << "Map: writeUInt16 adr 1, val 63123" << std::endl;
+
+	uint16_t read_uint16_val;
+	m.readUInt16(1,&read_uint16_val); 
+	std::cout << "Map: readUInt16 adr 1. Val " << read_uint16_val << std::endl;
+
+	uint32_t write_uint32_val = 4121113;
+	m.writeUInt32(2,write_uint32_val); 
+	std::cout << "Map: writeUInt32 adr 2, val 4121113" << std::endl;
+
+	uint32_t read_uint32_val;
+	m.readUInt32(2,&read_uint32_val); 
+	std::cout << "Map: readUInt32 adr 2. Val " << read_uint32_val << std::endl;
+
+	int8_t write_int8_val = -21;
+	m.writeInt8(30,write_int8_val); 
+	std::cout << "Map: writeInt8 adr 30, val -21" << std::endl;
+
+	int8_t read_int8_val;
+	m.readInt8(30,&read_int8_val); 
+	std::cout << "Map: readInt8 adr 30. Val " << static_cast<int>(read_int8_val) << std::endl;
+
+	int16_t write_int16_val = -29132;
+	m.writeInt16(31,write_int16_val); 
+	std::cout << "Map: writeInt16 adr 31, val -29132" << std::endl;
+
+	int16_t read_int16_val;
+	m.readInt16(31,&read_int16_val); 
+	std::cout << "Map: readInt16 adr 31. Val " << read_int16_val << std::endl;
+
+	int32_t write_int32_val = -4121113;
+	m.writeInt32(32,write_int32_val); 
+	std::cout << "Map: writeInt32 adr 32, val -4121113" << std::endl;
+
+	int32_t read_int32_val;
+	m.readInt32(32,&read_int32_val); 
+	std::cout << "Map: readInt32 adr 32. Val " << read_int32_val << std::endl;
+
+	float write_float16_val = 102.315;
+	m.writeFloat16(85,write_float16_val,1); 
+	std::cout << "Map: writeFloat16 adr 85, val 102.315, precision 1" << std::endl;
+
+	float read_float16_val;
+	m.readFloat16(85,&read_float16_val); 
+	std::cout << "Map: readFloat16 adr 85, precision 1. Val " << read_float16_val << std::endl;
+
+	float write_float32_val = 72124.9214;
+	m.writeFloat32(86,write_float32_val); 
+	std::cout << "Map: writeFloat16 adr 86, val 72124.9214" << std::endl;
+
+	float read_float32_val;
+	m.readFloat32(86,&read_float32_val); 
+	std::cout << "Map: readFloat32 adr 86. Val ";
+	printf("%.4f\n", read_float32_val);
+
+	m.printWordMap(5);
+	m.printWordMapBits(5);
+
 	return 0;
 }

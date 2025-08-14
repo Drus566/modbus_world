@@ -1,6 +1,7 @@
 #include "Map.h"
 
 #include <new> // для std::bad_alloc
+#include <math.h>
 
 namespace mb {
 namespace data {
@@ -473,29 +474,18 @@ bool Map::writeBits(const WORD adr, const WORD quantity, BIT *const val, MemMode
 	return true;
 }
 
-
 bool Map::readUInt8(const WORD adr, uint8_t *const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (val == nullptr || (adr < m_start_adr || adr > m_end_adr) && m_map_type == MapType::BIT_MAP) return false;
+	if (adr < m_start_adr || m_end_adr < adr || val == nullptr || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
-	// Если битовая карта BIT
-	if (m_map_type == MapType::BIT_MAP) {
-		WORD offset = adr - m_start_adr;
-		*val = *(m_mem_8_ptr + offset);
-	}
-	// Если карта слов WORD, uint8 по указанному адресу
-	else {
-		if (adr < m_start_adr || adr < m_end_adr || val == nullptr) return false;
-		WORD offset = adr - m_start_adr;
-		*val = *(m_mem_16_ptr + offset);
-		return true;
-	}
+	WORD offset = adr - m_start_adr;
+	*val = *(m_mem_16_ptr + offset);
 	return true;
 }
 
 bool Map::readUInt16(const WORD adr, uint16_t * const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (adr < m_start_adr || adr < m_end_adr || val == nullptr) return false;
+	if (adr < m_start_adr || m_end_adr < adr || val == nullptr || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
 	WORD offset = adr - m_start_adr;
 	*val = *(m_mem_16_ptr + offset);
@@ -504,7 +494,7 @@ bool Map::readUInt16(const WORD adr, uint16_t * const val, MemMode mode) {
 
 bool Map::readUInt32(const WORD adr, uint32_t *const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (adr < m_start_adr || val == nullptr || m_end_adr < adr + 1) return false;
+	if (adr < m_start_adr || val == nullptr || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
 	WORD offset = adr - m_start_adr;
 	*val = *(reinterpret_cast<DWORD*>(m_mem_16_ptr + offset));
@@ -513,26 +503,16 @@ bool Map::readUInt32(const WORD adr, uint32_t *const val, MemMode mode) {
 
 bool Map::readInt8(const WORD adr, int8_t *const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (val == nullptr || (adr < m_start_adr || adr > m_end_adr) && m_map_type == MapType::BIT_MAP) return false;
+	if (adr < m_start_adr || m_end_adr < adr || val == nullptr || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
-	// Если битовая карта BIT
-	if (m_map_type == MapType::BIT_MAP) {
-		WORD offset = adr - m_start_adr;
-		*val = *(m_mem_8_ptr + offset);
-	}
-	// Если карта слов WORD, uint8 по указанному адресу
-	else {
-		if (adr < m_start_adr || adr < m_end_adr || val == nullptr) return false;
-		WORD offset = adr - m_start_adr;
-		*val = *(m_mem_16_ptr + offset);
-		return true;
-	}
+	WORD offset = adr - m_start_adr;
+	*val = *(m_mem_16_ptr + offset);
 	return true;
 }
 
 bool Map::readInt16(const WORD adr, int16_t * const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (adr < m_start_adr || adr < m_end_adr || val == nullptr) return false;
+	if (adr < m_start_adr || m_end_adr < adr || val == nullptr || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
 	WORD offset = adr - m_start_adr;
 	*val = *(m_mem_16_ptr + offset);
@@ -541,15 +521,102 @@ bool Map::readInt16(const WORD adr, int16_t * const val, MemMode mode) {
 
 bool Map::readInt32(const WORD adr, int32_t *const val, MemMode mode) {
 	std::lock_guard<std::mutex> lock(m_mtx);
-	if (adr < m_start_adr || val == nullptr || m_end_adr < adr + 1) return false;
+	if (adr < m_start_adr || val == nullptr || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
 	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
 	WORD offset = adr - m_start_adr;
 	*val = *(reinterpret_cast<DWORD*>(m_mem_16_ptr + offset));
 	return true;
 }
 
+bool Map::readFloat16(const WORD adr, float *const val, uint8_t precision, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || val == nullptr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*val = (((int16_t)*(m_mem_16_ptr + offset)) / pow(10, precision));
+	return true;
+}
 
+bool Map::readFloat32(const WORD adr, float *const val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || val == nullptr || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*val = *(reinterpret_cast<float*>(m_mem_16_ptr + offset));
+	return true;
+}
 
+bool Map::writeUInt8(const WORD adr, const uint8_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(m_mem_16_ptr + offset) = val;
+	return true;
+}
+
+bool Map::writeUInt16(const WORD adr, const uint16_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(m_mem_16_ptr + offset) = val;
+	return true;
+}
+
+bool Map::writeUInt32(const WORD adr, const uint32_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr  || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(reinterpret_cast<DWORD*>(m_mem_16_ptr + offset)) = val; 
+	return true;
+}
+
+bool Map::writeInt8(const WORD adr, const int8_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	 *(m_mem_16_ptr + offset) = val;
+	return true;
+}
+
+bool Map::writeInt16(const WORD adr, const int16_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(m_mem_16_ptr + offset) = val; 
+	return true;
+}
+
+bool Map::writeInt32(const WORD adr, const int32_t val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(reinterpret_cast<DWORD*>(m_mem_16_ptr + offset)) = val; 
+	return true;
+}
+
+bool Map::writeFloat16(const WORD adr, const float val, uint8_t precision, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(m_mem_16_ptr + offset) = (int16_t)(val * powf(10, precision)); 
+	return true;
+}
+
+bool Map::writeFloat32(const WORD adr, const float val, MemMode mode) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	if (adr < m_start_adr || m_end_adr < adr + 1 || m_map_type == MapType::BIT_MAP) return false;
+	if (mode == MemMode::LITTLE_ENDIAN_BYTE_SWAP_MODE);
+	WORD offset = adr - m_start_adr;
+	*(reinterpret_cast<float*>(m_mem_16_ptr + offset)) = val; 
+	return true;
+}
 
 
 } // data
