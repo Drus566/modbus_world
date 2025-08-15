@@ -12,6 +12,39 @@
 namespace mb {
 namespace modbus {
 
+#define MAX_RTU_PACKAGE_SIZE 256
+#define MAX_RTU_BYTE_COUNT 252
+
+#define MAX_TCP_PACKAGE_SIZE 260
+#define MAX_TCP_BYTE_COUNT 260
+
+#define MODBUS_MAX_READ_BITS  2000
+#define MODBUS_MAX_WRITE_BITS 1968
+
+#define MODBUS_MAX_READ_REGISTERS     125
+#define MODBUS_MAX_WRITE_REGISTERS    123
+
+#define MODBUS_MAX_PDU_LENGTH 253
+
+#define MODBUS_MAX_ADU_LENGTH 260
+
+/* Protocol exceptions */
+enum class ModbusExceptionCode {
+    EXCEPTION_ILLEGAL_FUNCTION = 0x01,
+    EXCEPTION_ILLEGAL_DATA_ADDRESS,
+    EXCEPTION_ILLEGAL_DATA_VALUE,
+    EXCEPTION_SLAVE_OR_SERVER_FAILURE,
+    EXCEPTION_ACKNOWLEDGE,
+    EXCEPTION_SLAVE_OR_SERVER_BUSY,
+    EXCEPTION_NEGATIVE_ACKNOWLEDGE,
+    EXCEPTION_MEMORY_PARITY,
+    EXCEPTION_NOT_DEFINED,
+    EXCEPTION_GATEWAY_PATH,
+    EXCEPTION_GATEWAY_TARGET,
+    EXCEPTION_MAX
+};
+
+
 // Задаваемые пользователем (user-defined function codes) - 65...72, 100...110. Эти коды не описаны в спецификации стандарта и могут использоваться в конкретных изделиях для собственных функций.
 // Зарезервированные (reserved). В эту группу входят коды 9, 10, 13, 14, 41, 42, 90, 91, 125, 126 и 127.
 
@@ -48,14 +81,14 @@ enum class ModbusFunc {
 };
 
 enum class ModbusFuncError {
-    FErr_01 = 129, // Error Read Coil Status
-    FErr_02 = 130, // Error Read Input Status
-    FErr_03 = 131, // Error Read Holding Registers
-    FErr_04 = 132, // Error Read Input Registers
-    FErr_05 = 133, // Error Write Single Coil
-    FErr_06 = 134, // Error Write Single Register
-    FErr_15 = 143, // Error Write Multiple Coils
-    FErr_16 = 144, // Error Write Multiple Registers
+    F_ERR_01 = 129, // Error Read Coil Status
+    F_ERR_02 = 130, // Error Read Input Status
+    F_ERR_03 = 131, // Error Read Holding Registers
+    F_ERR_04 = 132, // Error Read Input Registers
+    F_ERR_05 = 133, // Error Write Single Coil
+    F_ERR_06 = 134, // Error Write Single Register
+    F_ERR_15 = 143, // Error Write Multiple Coils
+    F_ERR_16 = 144, // Error Write Multiple Registers
 };
 
 enum class ModbusRTU_Read {
@@ -212,6 +245,7 @@ public:
 				WORD start_adr = *(package + 2);
 				WORD quantity = *(package + 4);
 				BYTE byte_count = *(package + 6);
+				BYTE vals = *(package + 7);
 				WORD crc = *(package + 6 + byte_count + 1);
 		}
 	}
@@ -224,9 +258,9 @@ public:
 			case 2:
 			case 3:
 			case 4:
-				WORD start_adr = *(package + 2);
-				WORD quantity = *(package + 4);
-				WORD crc = *(package + 6); 
+				BYTE byte_count = *(package + 2);
+				BYTE vals = *(package + 3);
+				WORD crc = *(package + 2 + byte_count + 1);
 				break;
 			
 			case 5:
@@ -240,8 +274,7 @@ public:
 			case 16:
 				WORD start_adr = *(package + 2);
 				WORD quantity = *(package + 4);
-				BYTE byte_count = *(package + 6);
-				WORD crc = *(package + 6 + byte_count + 1);
+				WORD crc = *(package + 6);
 				break;
 			
 			case 129:
