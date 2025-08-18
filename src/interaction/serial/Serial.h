@@ -24,7 +24,7 @@ public:
 	bool isConnected();
 	long send(const uint8_t *req, int req_length);
 	int waitReceive(uint8_t *msg);
-	long doReceive();
+	long doReceive(uint8_t *rsp, int rsp_length);
 	void setRts(bool flag);
 	int flush();
 	// _modbus_rtu_select(modbus_t *ctx, fd_set *rset, struct timeval *tv, int length_to_read)
