@@ -30,7 +30,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(src)
 
 # add_executable(use_new_ini src/example/use_ini/new_ini.cpp)
-add_executable(use_mb example/use_data_map.cpp)
+add_executable(use_mb_map example/use_data_map.cpp)
+add_executable(use_mb_serial example/use_serial.cpp)
 
 #add_library(mb-static STATIC src/version.cpp)
 #add_library(mb-shared SHARED src/version.cpp)
@@ -38,7 +39,9 @@ add_executable(use_mb example/use_data_map.cpp)
 # add_executable(use_mb1 use_mb/main.cpp)
 
 # Линковка с библиотекой modbus
-target_link_libraries(use_mb map) 
+target_link_libraries(use_mb_map map) 
+target_link_libraries(use_mb_serial serial) 
+
 # target_link_libraries(use_new_ini mb helpers data_manager)
 
 # target_link_libraries(mb-static 
