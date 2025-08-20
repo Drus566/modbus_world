@@ -9,6 +9,7 @@
 #include <linux/serial.h>
 
 #include "Serial.h"
+#include "Time.h"
 
 namespace mb {
 namespace interaction {
@@ -22,6 +23,8 @@ Serial::Serial() {}
 Serial::Serial(std::string device, int baud, char parity, int data_bit, int stop_bit) {
 	init(device, baud, parity, data_bit, stop_bit);
 }
+
+int Serial::getSocket() { return m_fd; }
 
 void Serial::init(std::string device, int baud, char parity, int data_bit, int stop_bit) {
 	if (device.empty()) {
@@ -237,11 +240,14 @@ bool Serial::invertRts(bool flag) {
 
 bool Serial::flush() { return tcflush(m_fd, TCIOFLUSH) == 0; }
 
-bool Serial::doSelect(fd_set* rset, timeval* tv) {
+bool Serial::doSelect(fd_set* rset, int milliseconds) {
+	timeval tv;
+	mb::helpers::millisecondsToTimeval(milliseconds, tv);
+
 	int s_rc;
-	while ((s_rc = select(m_fd + 1, rset, NULL, NULL, tv)) == -1) {
+	while ((s_rc = select(m_fd + 1, rset, NULL, NULL, &tv)) == -1) {
 		if (errno == EINTR) {
-			if (m_debug) std::cout << "A non blocked signal was caught" << std::endl;
+			if (m_debug) std::cout << "Serial: A non blocked signal was caught" << std::endl;
 			/* Necessary after an error */
 			FD_ZERO(rset);
 			FD_SET(m_fd, rset);

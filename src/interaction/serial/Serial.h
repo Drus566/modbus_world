@@ -51,9 +51,11 @@ public:
 	// Очистка буфера ввода (принимаемые данные) вывода (не отправленные данные)
 	bool flush();
 	// Ожидание файлового дескриптора на ввод данных
-	bool doSelect(fd_set *rset, struct timeval *tv);
+	bool doSelect(fd_set *rset, int milliseconds);
 	// Закрыть файловый дескриптор
 	void doClose();
+	// Получить дескриптор/сокет устройства
+	int getSocket();
 
 	// Проверка поддержки аппаратного управления
 	static bool isSerialSupported(int socket);
