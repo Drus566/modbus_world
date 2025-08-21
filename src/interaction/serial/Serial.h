@@ -1,8 +1,6 @@
 #ifndef MB_SERIAL_H
 #define MB_SERIAL_H
 
-#include <stdint.h>
-#include <sys/time.h>
 #include <termios.h>
 #include <string>
 
@@ -38,16 +36,8 @@ public:
 	bool isConnected();
 	// Отправка сообщения
 	long send(const uint8_t *req, int req_length);
-	// Отправка сообщения с помощью rts
-	long sendRts(const uint8_t *req, int req_length);
 	// Получение сообщения
 	long receive(uint8_t *rsp, int rsp_length);
-	// Установка аппаратного управления потока данных
-	bool setRts(RtsMode mode);
-	// Переключить аппаратное управление потока данных
-	bool invertRts(bool flag);
-	// Установка режима для аппаратной части RS232/RS485 (если поддерживается)
-	bool setSerialMode(SerialMode mode);
 	// Очистка буфера ввода (принимаемые данные) вывода (не отправленные данные)
 	bool flush();
 	// Ожидание файлового дескриптора на ввод данных
@@ -56,6 +46,26 @@ public:
 	void doClose();
 	// Получить дескриптор/сокет устройства
 	int getSocket();
+
+	// Установка аппаратного управления потока данных
+	bool setRts(RtsMode mode);
+	// Переключить аппаратное управление потока данных
+	bool invertRts(bool flag);
+	// Установка режима для аппаратной части RS232/RS485 (если поддерживается)
+	bool setSerialMode(SerialMode mode);
+	// Отправка сообщения с помощью rts
+	long sendRts(const uint8_t *req, int req_length);
+	// Установка дебага
+	void setDebug(bool flag);
+
+	// Установка аппаратного управления потока данных
+	// static bool setRts(Serial &serial, RtsMode mode);
+	// // Переключить аппаратное управление потока данных
+	// static bool invertRts(Serial& serial, bool flag);
+	// // Установка режима для аппаратной части RS232/RS485 (если поддерживается)
+	// static bool setSerialMode(Serial &serial, SerialMode mode);
+	// // Отправка сообщения с помощью rts
+	// static long sendRts(Serial &serial, const uint8_t *req, int req_length);
 
 	// Проверка поддержки аппаратного управления
 	static bool isSerialSupported(int socket);

@@ -4,10 +4,13 @@
 
 int main(void) {
 	mb::interaction::Serial serial("/tmp/ttyV0", 19200, 'N', 8, 1);
-	serial.connect();
+	if (!serial.connect()) {
+		std::cout << "Error connect" << std::endl;
+		return -1;
+	}
+
 	uint8_t query[] = {0x01, 0x01, 0x00, 0x01, 0x00, 0x03, 0x2D, 0xCB};
 	serial.send(query,8);
-
 
 	mb::interaction::Serial serialV1("/tmp/ttyV1", 19200, 'N', 8, 1);
 	serialV1.connect();

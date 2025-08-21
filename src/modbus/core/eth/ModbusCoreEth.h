@@ -12,15 +12,15 @@ public:
 	~ModbusCoreEth();
 	
 	// Очистить байты
-	bool flush() override;
-	// Получить запрос, используется slave
-	bool receiveRequest() override;
-	// Получить ответ|подтверждение, используется master
-	bool receiveConfirmation() override;
-	// Отправить запрос, используется master
-	bool sendRequest() override;
-	// Отправить ответ|подтверждение, используется master
-	bool sendConfirmation() override;
+	// bool flush() override;
+	// // Получить запрос, используется slave
+	// bool receiveRequest() override;
+	// // Получить ответ|подтверждение, используется master
+	// bool receiveConfirmation() override;
+	// // Отправить запрос, используется master
+	// bool sendRequest() override;
+	// // Отправить ответ|подтверждение, используется master
+	// bool sendConfirmation() override;
 
 private:
 	mb::types::ModbusConnection m_connection;

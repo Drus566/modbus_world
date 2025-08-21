@@ -8,7 +8,7 @@ namespace helpers {
 
 void millisecondsToSecondsMicroseconds(int milliseconds, int& seconds, int& microseconds);
 
-void millisecondsToTimeval(int milliseconds, timeval& tv);
+void millisecondsToTimeval(int milliseconds, timeval &tv);
 
 void sleep(int ms);
 

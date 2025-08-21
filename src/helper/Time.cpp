@@ -18,7 +18,7 @@ void millisecondsToTimeval(int milliseconds, timeval& tv) {
    tv.tv_usec = (milliseconds % 1000) * 1000; // Остаток в микросекундах
 }
 
-void sleepResponseTimeout(int ms) {
+void sleep(int ms) {
    usleep(ms * 1000);
 }
 

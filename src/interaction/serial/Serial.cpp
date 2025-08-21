@@ -61,7 +61,7 @@ bool Serial::connect() {
 	speed_t speed;
 
 	if (m_debug) {
-		std::cout << "Opening "<< m_device << " at " 
+		std::cout << "Serial: Opening "<< m_device << " at " 
 		<< m_baudrate << " bauds (" << m_parity << ", " 
 		<< (int)m_data_bit << ", " << (int)m_stop_bit << ")" << std::endl;
 	}
@@ -71,7 +71,7 @@ bool Serial::connect() {
 
 	if (m_fd < 0) {
 		if (m_debug) {
-			std::cout << "Error open device " << m_device << " (" << strerror(errno) << ")" << std::endl;;
+			std::cout << "Serial: Error open device " << m_device << " (" << strerror(errno) << ")" << std::endl;;
 		}
 		return false;
 	}
@@ -137,7 +137,7 @@ bool Serial::connect() {
 		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 bool Serial::isConnected() { return (m_fd >= 0); }
@@ -269,6 +269,10 @@ void Serial::doClose() {
 		close(m_fd);
 		m_fd = -1;
 	}
+}
+
+void Serial::setDebug(bool flag) {
+	m_debug = flag;
 }
 
 bool Serial::isRtsSupported(int socket) {
@@ -403,6 +407,98 @@ speed_t Serial::getTermiosSpeed(int baud, bool debug) {
 
 	return speed;
 }
+
+
+// Установка аппаратного управления потока данных
+// bool Serial::setRts(Serial &serial, RtsMode mode) {
+// 	if (serial.m_fd <= 0) {
+// 		errno = EINVAL;
+// 		std::cout << "Serial: Error setRts, Device socket " << serial.m_fd << " not opened" << std::endl;
+// 		return false;
+// 	}
+
+// 	if (!Serial::isRtsSupported(serial.m_fd)) {
+// 		std::cout << "Serial: Rts mode not supported" << std::endl;
+// 		return false;
+// 	}
+
+// 	if (mode == RtsMode::NONE || mode == RtsMode::UP || mode == RtsMode::DOWN) {
+// 		serial.m_rts = mode;
+// 		Serial::invertRts(serial, serial.m_rts != RtsMode::UP);
+// 	}
+// }
+
+// // Переключить аппаратное управление потока данных
+// bool Serial::invertRts(Serial &serial, bool flag) {
+// 	int fd = serial.m_fd;
+// 	int flags;
+
+// 	ioctl(fd, TIOCMGET, &flags);
+// 	if (flag) flags |= TIOCM_RTS;
+// 	else flags &= ~TIOCM_RTS;
+// 	ioctl(fd, TIOCMSET, &flags);
+// }
+
+// // Установка режима для аппаратной части RS232/RS485 (если поддерживается)
+// bool Serial::setSerialMode(Serial& serial, SerialMode mode) {
+// 	if (serial.m_fd < 0) {
+// 		errno = EINVAL;
+// 		std::cout << "Serial: Error setSerialMode, Device socket " << serial.m_fd << " not opened" << std::endl;
+// 		return false;
+// 	}
+
+// 	if (!Serial::isSerialSupported(serial.m_fd)) {
+// 		if (errno == ENOTSUP) {
+// 			std::cout << "Serial: Serial mode not supported" << std::endl;
+// 		}
+// 		else {
+// 			std::cout << "Serial: ioctl error call" << std::endl;
+// 		}
+// 		return false;
+// 	}
+
+// 	serial_rs485 rs485_conf;
+// 	if (mode == SerialMode::RS485) {
+// 		// Get
+// 		if (ioctl(serial.m_fd, TIOCGRS485, &rs485_conf) < 0) return false;
+		
+// 		// Set
+// 		rs485_conf.flags |= SER_RS485_ENABLED;
+// 		if (ioctl(serial.m_fd, TIOCSRS485, &rs485_conf) < 0) return false;
+
+// 		serial.m_serial_mode = SerialMode::RS485;
+// 	}
+// 	else if (mode == SerialMode::RS232) {
+// 		/* Turn off RS485 mode only if required */
+// 		if (serial.m_serial_mode == SerialMode::RS485) {
+// 			/* The ioctl call is avoided because it can fail on some RS232 ports */
+// 			if (ioctl(serial.m_fd, TIOCGRS485, &rs485_conf) < 0) return false;
+
+// 			rs485_conf.flags &= ~SER_RS485_ENABLED;
+// 			if (ioctl(serial.m_fd, TIOCSRS485, &rs485_conf) < 0) return false;
+// 		}
+// 		serial.m_serial_mode = SerialMode::RS232;
+// 	}
+// 	return true;
+// }
+
+// long Serial::sendRts(Serial &serial, const uint8_t *req, int req_length) {
+// 	ssize_t size;
+
+// 	if (serial.m_debug) {
+// 		std::cout << "Sending request using RTS signal\n" << std::endl;
+// 	}
+
+// 	Serial::invertRts(serial, serial.m_rts == RtsMode::UP);
+// 	usleep(serial.m_rts_delay);
+
+// 	size = write(serial.m_fd, req, req_length);
+
+// 	usleep(serial.m_onebyte_time * req_length + serial.m_rts_delay);
+// 	Serial::invertRts(serial, serial.m_rts != RtsMode::UP);
+
+// 	return size;
+// }
 
 /* Waits a response from a modbus server or a request from a modbus client.
 	This function blocks if there is no replies (3 timeouts).
