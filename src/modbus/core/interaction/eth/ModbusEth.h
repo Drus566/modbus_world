@@ -1,16 +1,16 @@
-#ifndef MB_MODBUS_CORE_ETH_H
-#define MB_MODBUS_CORE_ETH_H
+#ifndef MB_MODBUS_ETH_H
+#define MB_MODBUS_ETH_H
 
-#include "IModbusCore.h"
+#include "IModbusInteraction.h"
 
 namespace mb {
 namespace core {
 
-class ModbusCoreEth : public IModbusCore {
+class ModbusEth  {
 public:
-	ModbusCoreEth();
-	~ModbusCoreEth();
-	
+	ModbusEth();
+	~ModbusEth();
+
 	// Очистить байты
 	// bool flush() override;
 	// // Получить запрос, используется slave
@@ -32,4 +32,4 @@ private:
 }
 }
 
-#endif // MB_MODBUS_CORE_ETH_H
+#endif // MB_MODBUS_ETH_H

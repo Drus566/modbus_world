@@ -35,7 +35,7 @@ public:
 	// Статус подключения
 	bool isConnected();
 	// Отправка сообщения
-	long send(const uint8_t *req, int req_length);
+	bool send(const uint8_t *req, int req_length);
 	// Получение сообщения
 	long receive(uint8_t *rsp, int rsp_length);
 	// Очистка буфера ввода (принимаемые данные) вывода (не отправленные данные)

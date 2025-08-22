@@ -32,6 +32,7 @@ add_subdirectory(src)
 # add_executable(use_new_ini src/example/use_ini/new_ini.cpp)
 add_executable(use_mb_map example/use_data_map.cpp)
 add_executable(use_mb_serial example/use_serial.cpp)
+add_executable(use_mb_modbus_interaction example/use_modbus_interaction.cpp)
 
 #add_library(mb-static STATIC src/version.cpp)
 #add_library(mb-shared SHARED src/version.cpp)
@@ -40,7 +41,16 @@ add_executable(use_mb_serial example/use_serial.cpp)
 
 # Линковка с библиотекой modbus
 target_link_libraries(use_mb_map map) 
-target_link_libraries(use_mb_serial serial) 
+target_link_libraries(use_mb_serial serial 
+												helpers) 
+target_link_libraries(use_mb_modbus_interaction  modbus_interaction
+																 serial 
+																 helpers
+																 types) 
+
+# file(GLOB_RECURSE PUBLIC_HEADERS LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} "${CMAKE_SOURCE_DIR}/src/*.h")
+# install(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mb)
+
 
 # target_link_libraries(use_new_ini mb helpers data_manager)
 

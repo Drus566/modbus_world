@@ -3,7 +3,7 @@
 namespace mb {
 namespace core {
 
-ModbusCoreEth::ModbusCoreEth() {}
+ModbusEth::ModbusEth() {}
 
 
 }

@@ -1,9 +1,9 @@
-#ifndef MB_MODBUS_CORE_RTU_H
-#define MB_MODBUS_CORE_RTU_H
+#ifndef MB_MODBUS_RTU_H
+#define MB_MODBUS_RTU_H
 
 #include <memory>
 
-#include "IModbusCore.h"
+#include "IModbusInteraction.h"
 #include "Serial.h"
 
 // _MODBUS_TCP_HEADER_LENGTH 7
@@ -12,10 +12,10 @@
 namespace mb {
 namespace core {
 
-class ModbusCoreRtu : public IModbusCore {
+class ModbusRtu : public IModbusInteraction {
 public:
-	ModbusCoreRtu(mb::types::ModbusConnection connection);
-	~ModbusCoreRtu();
+	ModbusRtu(mb::types::ModbusConnection connection);
+	~ModbusRtu();
 
 	// Коннект
 	bool connect() override;
@@ -30,9 +30,17 @@ public:
 	// Получить ответ, используется master
 	bool getResponseFromSlave() override;
 	// Отправить запрос, используется master
-	bool sendRequestToSlave() override;
+	bool sendRequestToSlave(uint8_t *msg, int length) override;
 	// Отправить ответ, используется master
-	bool sendResponseToMaster() override;
+	bool sendResponseToMaster(uint8_t *msg, int length) override;
+
+	// Отправить запрос чтения
+	bool sendReadReq(mb::core::Data& data) override;
+	// Отправить запрос записи одного койла/регистра
+	bool sendWriteSingleReq(mb::core::Data& data) override;
+	// Отправить запрос записи множества койлов/регистров
+	bool sendWriteMultipleReq(mb::core::Data& data) override;
+
 	// Установка дебага
 	void setDebug(bool flag) override;
 
@@ -49,4 +57,4 @@ private:
 }
 }
 
-#endif // MB_MODBUS_CORE_RTU_H
+#endif // MB_MODBUS_RTU_H

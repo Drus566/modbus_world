@@ -10,6 +10,7 @@
 
 #include "Serial.h"
 #include "Time.h"
+#include "View.h"
 
 namespace mb {
 namespace interaction {
@@ -142,8 +143,32 @@ bool Serial::connect() {
 
 bool Serial::isConnected() { return (m_fd >= 0); }
 
-long Serial::send(const uint8_t* req, int req_length) {
-	return write(m_fd, req, req_length);
+bool Serial::send(const uint8_t* req, int req_length) {
+	bool result = true;
+
+	ssize_t written = 0;
+	ssize_t ret;
+
+	while (written < req_length) {
+		ret = write(m_fd, (const char*)req + written, req_length - written);
+		if (ret <= 0) {
+			if (ret == -1 && errno == EINTR) continue;
+			result = false;
+			break;
+		}
+		written += ret;
+	}
+
+	if (m_debug) {
+		if (result) {
+			std::cout << "Serial: send package ";
+			mb::helpers::printPackage(req, req_length);
+			std::cout << std::endl;
+		} 
+		else std::cout << "Serial: Error send package" << std::endl;
+	}
+
+	return result;
 }
 
 long Serial::sendRts(const uint8_t* req, int req_length) {
