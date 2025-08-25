@@ -6,6 +6,7 @@
 namespace mb {
 namespace core {
 
+// Данные для формирования пакета запроса
 struct Data {
 	uint8_t *bit_vals;   // Указать на битовые данные, используется при записи множества битов
 	uint16_t *words_val; // Указатель на слова, используется при записи множества слов
@@ -37,14 +38,13 @@ public:
 	// Отправить запрос в слейв
 	virtual bool sendRequestToSlave(uint8_t *msg, int length) = 0;
 	// Отправить ответ в мастер
-	virtual bool sendResponseToMaster(uint8_t *msg, int length) = 0;
-	// Отправить запрос чтения
-	virtual bool sendReadReq(Data &data) = 0;
-	// Отправить запрос записи одного койла/регистра
-	virtual bool sendWriteSingleReq(Data &data) = 0;
-	// Отправить запрос записи множества койлов/регистров
-	virtual bool sendWriteMultipleReq(Data &data) = 0;
- 
+	virtual bool sendResponseToMaster(Data &data) = 0;
+
+	// Отправить запрос слейву
+	virtual bool sendRequest(Data &data) = 0;
+	// Получить ответ на запрос от слейва
+	virtual bool getResponse(Data &data, int length) = 0;
+
 	// Установить дебаг
 	virtual void setDebug(bool flag) = 0;
 }; 

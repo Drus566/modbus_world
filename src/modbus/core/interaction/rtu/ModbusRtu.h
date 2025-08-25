@@ -32,14 +32,19 @@ public:
 	// Отправить запрос, используется master
 	bool sendRequestToSlave(uint8_t *msg, int length) override;
 	// Отправить ответ, используется master
-	bool sendResponseToMaster(uint8_t *msg, int length) override;
+	bool sendResponseToMaster(mb::core::Data &data) override;
+	
+	// Отправить запрос чтения 
+	bool sendRequest(mb::core::Data& data) override;
+	// Получить ответ на запрос чтения
+	bool getResponse(mb::core::Data &data, int length) override;
 
 	// Отправить запрос чтения
-	bool sendReadReq(mb::core::Data& data) override;
+	bool sendReadReq(mb::core::Data& data);
 	// Отправить запрос записи одного койла/регистра
-	bool sendWriteSingleReq(mb::core::Data& data) override;
+	bool sendWriteSingleReq(mb::core::Data& data);
 	// Отправить запрос записи множества койлов/регистров
-	bool sendWriteMultipleReq(mb::core::Data& data) override;
+	bool sendWriteMultipleReq(mb::core::Data& data);
 
 	// Установка дебага
 	void setDebug(bool flag) override;

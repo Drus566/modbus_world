@@ -5,10 +5,11 @@
 #include "Crc.h"
 #include "ModbusEnums.h"
 
-#define RTU_READ_REQ_LENGTH 8
-#define RTU_WRITE_SINGLE_REQ_LENGTH 8
-#define MAX_RTU_MSG_LENGTH 252
-#define CRC_SIZE 2
+#define RTU_READ_REQ_LENGTH 8				// Длина пакета запроса чтения 
+#define RTU_WRITE_SINGLE_REQ_LENGTH 8	// Длина пакета запроса записи одиночного бита/слова
+#define MAX_RTU_MSG_LENGTH 252 			// Максимальная длина пакета RTU
+#define MIN_READ_RESPONSE_LENGTH 5 		// Минимальное количество байт для получения ответа
+#define CRC_SIZE 2							// Размер crc в байтах
 
 namespace mb {
 namespace core {
@@ -170,8 +171,64 @@ bool ModbusRtu::sendRequestToSlave(uint8_t* msg, int length) {
 }
 
 // Отправить запрос, используется master
+bool ModbusRtu::sendRequest(mb::core::Data& data) {
+	bool result = false;
+	switch (data.func) {
+		case mb::types::FuncNumber::READ_COIL:
+		case mb::types::FuncNumber::READ_INPUT_COIL:
+		case mb::types::FuncNumber::READ_REGS:
+		case mb::types::FuncNumber::READ_INPUT_REGS:
+			result = sendReadReq(data);
+			break;
+		case mb::types::FuncNumber::WRITE_SINGLE_COIL:
+		case mb::types::FuncNumber::WRITE_SINGLE_WORD:
+			result = sendWriteSingleReq(data);
+			break;
+		case mb::types::FuncNumber::WRITE_MULTIPLE_COILS:
+		case mb::types::FuncNumber::WRITE_MULTIPLE_WORDS:
+			result = sendWriteMultipleReq(data);
+			break;
+	}
+	return result;
+}
+
+bool ModbusRtu::getResponse(mb::core::Data& data, int length) {
+	bool complete = false;
+	int msg_offset = 0;
+	long byte_readed = 0;
+	int timeout_ms = m_connection.response_timeout;
+	int rc;
+	uint8_t msg[MAX_RTU_MSG_LENGTH] = {0};
+
+	while (!complete) {
+		rc = m_serial.waitReceive(timeout_ms);
+		if (rc == -1) {
+			// Вызов waitReceive был прерван
+			if (errno == EINTR) {
+				if (m_debug) std::cout << "ModbusRtu: waitReceive iterrupt, call again" << std::endl;
+				continue;
+			}
+			// Неверный файловый дескриптор
+			else if (errno == EBADF) {
+				// Переподключение
+				m_serial.doClose();
+				m_serial.connect();
+				if (m_debug) std::cout << "ModbusRtu: invalid file descriptor" << std::endl;
+			}
+			else if (errno == ETIMEDOUT) {
+			
+			}
+		}
+		// Если ошибка то возвращаем результат
+		if (rc < 0) return rc;
+		byte_readed += m_serial.receive(msg, MIN_READ_RESPONSE_LENGTH);
+	}
+
+	return true;
+}
+
 bool ModbusRtu::sendReadReq(mb::core::Data& data) {
-	uint8_t msg[RTU_READ_REQ_LENGTH];
+	uint8_t msg[RTU_READ_REQ_LENGTH] = {0};
 	// Slave id
 	msg[0] = data.id;
 	// Func
@@ -192,7 +249,7 @@ bool ModbusRtu::sendReadReq(mb::core::Data& data) {
 }
 
 bool ModbusRtu::sendWriteSingleReq(mb::core::Data &data) {
-	uint8_t msg[RTU_WRITE_SINGLE_REQ_LENGTH];
+	uint8_t msg[RTU_WRITE_SINGLE_REQ_LENGTH] = {0};
 	// Slave id
 	msg[0] = data.id;
 	// Func
@@ -274,29 +331,18 @@ bool ModbusRtu::sendWriteMultipleReq(mb::core::Data &data) {
 	return m_serial.send(msg, RTU_WRITE_SINGLE_REQ_LENGTH);
 }
 
-// inline WORD helperWriteWordBit(WORD word, BIT bit_number, BIT bit_val)
-// {
-// 	WORD result;
-// 	if (bit_val)
-// 		result = word | (1 << bit_number); // Установка 1
-// 	else
-// 		result = word & ~(1 << bit_number); // Установка 0
-// 	return result;
-// }
 
-// inline BIT helperReadWordBit(WORD word, BIT bit_number)
-// {
-// 	return (word >> bit_number) & 1;
-// }
 
-// inline WORD helperInvertWordBit(WORD word, BIT bit_number)
-// {
-// 	return word = word ^ (1 << bit_number);
-// }
-
-// Отправить ответ|подтверждение, используется master
-bool ModbusRtu::sendResponseToMaster(uint8_t* msg, int length) {
-
+// Отправить ответ|подтверждение, используется slave
+bool ModbusRtu::sendResponseToMaster(mb::core::Data &req) {
+	// uint8_t *bit_vals;	// Указать на битовые данные, используется при записи множества битов
+	// uint16_t *words_val; // Указатель на слова, используется при записи множества слов
+	// uint16_t payload_1;	// Может являться Start adr, Out Adr, Reg Adr
+	// uint16_t payload_2;	// Может являться Quantity, Out val, Reg val
+	// uint8_t id;				// ID мастера или слейва
+	// uint8_t func;			// Номер фукнции модбас
+	// uint8_t byte_count;	// Количество байт, используется при записи множества слов/байт
+	// req.id
 }
 
 void ModbusRtu::setDebug(bool flag) {

@@ -265,27 +265,38 @@ bool Serial::invertRts(bool flag) {
 
 bool Serial::flush() { return tcflush(m_fd, TCIOFLUSH) == 0; }
 
-bool Serial::doSelect(fd_set* rset, int milliseconds) {
+int Serial::waitReceive(int milliseconds) {
+	fd_set readfds;
 	timeval tv;
+	int ret;
+
 	mb::helpers::millisecondsToTimeval(milliseconds, tv);
 
-	int s_rc;
-	while ((s_rc = select(m_fd + 1, rset, NULL, NULL, &tv)) == -1) {
-		if (errno == EINTR) {
-			if (m_debug) std::cout << "Serial: A non blocked signal was caught" << std::endl;
-			/* Necessary after an error */
-			FD_ZERO(rset);
-			FD_SET(m_fd, rset);
-		}
-		else return false;
-	}
+	FD_ZERO(&readfds);
+	FD_SET(m_fd, &readfds);
 
-	if (s_rc == 0) {
-		/* Timeout */
-		errno = ETIMEDOUT;
-		return false;
+	ret = select(m_fd + 1, &readfds, NULL, NULL, &tv);
+
+	if (ret == -1) {
+		if (m_debug) {
+			std::cout << "Serial: Select error" << std::endl;
+		}
+		return -1; // ошибка
 	}
-	return true;
+	else if (ret == 0) {
+		if (m_debug) {
+			std::cout << "Serial: Timeout occurred" << std::endl;
+		}
+		return 0; // таймаут
+	}
+	else {
+		// Проверяем конкретный дескриптор
+		if (FD_ISSET(m_fd, &readfds)) {
+			// Данные готовы для чтения
+			return 1;
+		}
+	}
+	return -1; // что-то пошло не так
 }
 
 void Serial::doClose() {
