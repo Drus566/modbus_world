@@ -79,16 +79,11 @@ private:
 	// Дескриптор устройства
 	int m_fd;
 
-	// Путь к устройству
-	std::string m_device;
-	// Скорость в бодах
-	int m_baudrate;
-	// Четность
-	char m_parity;
-	// Биты данных
-	uint8_t m_data_bit;
-	// Стоп бит
-	uint8_t m_stop_bit;
+	std::string m_device; 	// Путь к устройству
+	int m_baudrate; 		// Скорость в бодах
+	char m_parity; 			// Четность
+	uint8_t m_data_bit; 	// Биты данных
+	uint8_t m_stop_bit; 	// Стоп бит
 
 	// Для сохранения старых настроек последовательного порта
 	termios m_old_tios;
