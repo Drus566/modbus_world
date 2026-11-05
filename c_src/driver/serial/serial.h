@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "serial_platform.h"
+#include "serial_port.h"
 
 // #define MB_SERIAL_RESPONSE_TIMEOUT_US 500000
 // #define MB_SERIAL_BYTE_TIMEOUT_US 500000
