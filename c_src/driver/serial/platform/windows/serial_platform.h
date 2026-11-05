@@ -7,7 +7,7 @@ typedef struct {
     HANDLE handle;
     DCB old_dcb;
     COMMTIMEOUTS old_timeouts;
-    bool has_old_settings;
-} SerialPort;
+    // bool has_old_settings;
+} SerialPlatform;
 
 #endif // DRIVER_SERIAL_WINDOWS_H

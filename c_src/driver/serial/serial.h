@@ -1,9 +1,12 @@
 #ifndef DRIVER_SERIAL_H
 #define DRIVER_SERIAL_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
-#include "serial_port.h"
+#include "serial_platform.h"
+#include "base.h"
 
 // #define MB_SERIAL_RESPONSE_TIMEOUT_US 500000
 // #define MB_SERIAL_BYTE_TIMEOUT_US 500000
@@ -34,6 +37,12 @@ typedef struct {
     RtsMode rts_mode;
     SerialMode serial_mode;
 } SerialConfig;
+
+typedef struct {
+    SerialPlatform platform;
+    bool is_open;
+} SerialPort;
+
 
 SerialResult serialOpen(
     SerialPort *serial_port;
